@@ -1,0 +1,31 @@
+<resources>
+    <string name="app_name">Tickets-Mobile</string>
+    <string name="mainToolbarTitle">Events</string>
+    <string name="main_filter_title">filter</string>
+    <string name="main_sort_title">sort</string>
+    <string name="event_image_content_description">Event Image</string>
+    <string name="filters_textview_text">Filters</string>
+    <string name="event_name_hint">Event name</string>
+    <string name="venue_hint">Venue</string>
+    <string name="event_type_hint">Event Type</string>
+    <string name="fab_content_description">Check orders</string>
+    <string name="name_ascending_chip_main">Name ascending</string>
+    <string name="name_descending_chip_main">Name descending</string>
+    <string name="price_ascending_chip_main">Price ascending</string>
+    <string name="price_descending_chip_main">Price descending</string>
+    <string name="sort_by_main_textview">Sort by</string>
+    <string name="category_dropdown">Category</string>
+    <string name="num_of_tickets_hint"># of Tickets</string>
+    <string name="buy_btn_text">Buy</string>
+    <string name="expand_btn_text">Expand</string>
+    <string name="collapse_btn_text">Collapse</string>
+    <string name="date_ascending_chip_order">Date ascending</string>
+    <string name="date_descending_chip_order">Date descending</string>
+    <string name="update_order_btn_text">Update</string>
+    <string name="delete_order_btn_text">Delete</string>
+
+    <string-array name="simple_items">
+        <item>Standard</item>
+        <item>VIP</item>
+    </string-array>
+</resources>
