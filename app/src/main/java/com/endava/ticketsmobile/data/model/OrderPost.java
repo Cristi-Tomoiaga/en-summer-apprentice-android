@@ -1,16 +1,16 @@
 package com.endava.ticketsmobile.data.model;
 
-public class OrderUpdate {
+public class OrderPost {
     private int eventId;
 
     private int ticketCategoryId;
 
     private int numberOfTickets;
 
-    public OrderUpdate() {
+    public OrderPost() {
     }
 
-    public OrderUpdate(int eventId, int ticketCategoryId, int numberOfTickets) {
+    public OrderPost(int eventId, int ticketCategoryId, int numberOfTickets) {
         this.eventId = eventId;
         this.ticketCategoryId = ticketCategoryId;
         this.numberOfTickets = numberOfTickets;

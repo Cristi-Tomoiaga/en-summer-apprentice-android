@@ -1,10 +1,13 @@
 package com.endava.ticketsmobile.ui.adapters;
 
+import android.text.Editable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -14,18 +17,30 @@ import androidx.transition.TransitionManager;
 
 import com.endava.ticketsmobile.R;
 import com.endava.ticketsmobile.data.model.Order;
+import com.endava.ticketsmobile.data.model.OrderPatch;
 import com.endava.ticketsmobile.data.model.TicketCategory;
+import com.endava.ticketsmobile.data.services.TicketsNetService;
+import com.endava.ticketsmobile.data.services.util.TicketsServiceFactory;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.textfield.MaterialAutoCompleteTextView;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.ViewHolder> {
     private final List<Order> orders;
+
+    public OrderAdapter() {
+        this.orders = new ArrayList<>();
+    }
 
     public OrderAdapter(List<Order> orders) {
         this.orders = orders;
@@ -50,11 +65,103 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.ViewHolder> 
             order.setExpanded(!expanded);
             notifyItemChanged(position);
         });
+
+        holder.orderDeleteButton.setOnClickListener(view -> {
+            TicketsNetService ticketsNetService = TicketsServiceFactory.createTicketsServiceForNet();
+            Call<String> orderDeleteCall = ticketsNetService.deleteOrder(order.getId());
+            orderDeleteCall.enqueue(new Callback<String>() {
+                @Override
+                public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
+                    if (response.isSuccessful()) {
+                        Toast.makeText(holder.itemView.getContext(), "Order deleted!", Toast.LENGTH_SHORT)
+                                .show();
+                        orders.remove(holder.getAdapterPosition());
+                        notifyItemRemoved(holder.getAdapterPosition());
+                    } else {
+                        Toast.makeText(holder.itemView.getContext(), "Error " + response.message(), Toast.LENGTH_SHORT)
+                                .show();
+                        Log.d("NetworkRequest", response.message());
+                    }
+                }
+
+                @Override
+                public void onFailure(@NonNull Call<String> call, @NonNull Throwable t) {
+                    Toast.makeText(holder.itemView.getContext(), "Error " + t.getMessage(), Toast.LENGTH_SHORT)
+                            .show();
+                    Log.e("NetworkRequest", t.getMessage());
+                }
+            });
+        });
+
+        holder.orderUpdateButton.setOnClickListener(view -> {
+            String selectedTicketCategory = holder.ticketCategoriesTextView.getText().toString();
+            int index = holder.ticketCategories.indexOf(selectedTicketCategory);
+
+            if (index == -1) {
+                holder.orderTicketCategoryField.setError("Select a category");
+                return;
+            }
+
+            Editable numberOfTicketsEditable = holder.numberTicketsTextEdit.getText();
+            if (numberOfTicketsEditable == null) {
+                holder.orderNumberTicketsField.setError("Enter a valid number");
+                return;
+            }
+
+            int numberOfTickets;
+            try {
+                numberOfTickets = Integer.parseInt(numberOfTicketsEditable.toString());
+
+                if (numberOfTickets == 0) {
+                    holder.orderNumberTicketsField.setError("Enter a valid number");
+                    return;
+                }
+            } catch (NumberFormatException ex) {
+                holder.orderNumberTicketsField.setError("Enter a valid number");
+                return;
+            }
+
+            OrderPatch orderPatch = new OrderPatch(order.getEvent().getTicketCategories().get(index).getId(), numberOfTickets);
+
+            TicketsNetService ticketsNetService = TicketsServiceFactory.createTicketsServiceForNet();
+            Call<Order> orderUpdateCall = ticketsNetService.updateOrder(order.getId(), orderPatch);
+            orderUpdateCall.enqueue(new Callback<Order>() {
+                @Override
+                public void onResponse(@NonNull Call<Order> call, @NonNull Response<Order> response) {
+                    if (response.isSuccessful()) {
+                        Toast.makeText(holder.itemView.getContext(), "Order updated!", Toast.LENGTH_SHORT)
+                                .show();
+                        orders.set(holder.getAdapterPosition(), response.body());
+                        notifyItemChanged(holder.getAdapterPosition());
+                        holder.clearFields();
+                    } else {
+                        Toast.makeText(holder.itemView.getContext(), "Error " + response.message(), Toast.LENGTH_SHORT)
+                                .show();
+                        Log.d("NetworkRequest", response.message());
+                        holder.clearFields();
+                    }
+                }
+
+                @Override
+                public void onFailure(@NonNull Call<Order> call, @NonNull Throwable t) {
+                    Toast.makeText(holder.itemView.getContext(), "Error " + t.getMessage(), Toast.LENGTH_SHORT)
+                            .show();
+                    Log.e("NetworkRequest", t.getMessage());
+                    holder.clearFields();
+                }
+            });
+        });
     }
 
     @Override
     public int getItemCount() {
         return orders.size();
+    }
+
+    public void updateData(List<Order> orders) {
+        this.orders.clear();
+        this.orders.addAll(orders);
+        notifyItemRangeChanged(0, getItemCount());
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
@@ -66,7 +173,14 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.ViewHolder> 
         private final TextInputEditText numberTicketsTextEdit;
         private final ConstraintLayout buyLayout;
         private final MaterialCardView cardView;
-        public final Button expandButton;
+        private final Button expandButton;
+        private final Button orderDeleteButton;
+        private final Button orderUpdateButton;
+        private final TextInputLayout orderTicketCategoryField;
+        private final TextInputLayout orderNumberTicketsField;
+
+        private final List<String> ticketCategories = new ArrayList<>();
+
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -80,6 +194,15 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.ViewHolder> 
             expandButton = itemView.findViewById(R.id.orderExpandButton);
             cardView = itemView.findViewById(R.id.cardViewOrderItem);
             buyLayout = itemView.findViewById(R.id.orderActionsLayout);
+            orderDeleteButton = itemView.findViewById(R.id.orderDeleteButton);
+            orderUpdateButton = itemView.findViewById(R.id.orderUpdateButton);
+            orderTicketCategoryField = itemView.findViewById(R.id.orderTicketCategoryField);
+            orderNumberTicketsField = itemView.findViewById(R.id.orderNumberTicketsField);
+        }
+
+        public void clearFields() {
+            orderTicketCategoryField.setError("");
+            orderNumberTicketsField.setError("");
         }
 
         public void bind(Order order) {
@@ -88,7 +211,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.ViewHolder> 
             totalPriceField.setText(String.format(Locale.ENGLISH, "Total Price: %.2f", order.getTotalPrice()));
             dateField.setText(order.getTimestamp().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
 
-            List<String> ticketCategories = new ArrayList<>();
+            ticketCategories.clear();
             String selectedTicketCategory = "";
             for (TicketCategory tc: order.getEvent().getTicketCategories()) {
                 String ticketCategoryItem = tc.getDescription() + " - " + tc.getPrice();

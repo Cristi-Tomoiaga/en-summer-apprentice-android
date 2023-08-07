@@ -1,94 +1,34 @@
 package com.endava.ticketsmobile.ui.activities;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.SimpleItemAnimator;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.endava.ticketsmobile.R;
 import com.endava.ticketsmobile.data.model.Event;
-import com.endava.ticketsmobile.data.model.TicketCategory;
-import com.endava.ticketsmobile.data.model.Venue;
+import com.endava.ticketsmobile.data.services.TicketsJavaService;
+import com.endava.ticketsmobile.data.services.util.TicketsServiceFactory;
 import com.endava.ticketsmobile.ui.adapters.EventAdapter;
 import com.endava.ticketsmobile.ui.fragments.FilterModalBottomSheet;
 import com.endava.ticketsmobile.ui.fragments.SortModalBottomSheet;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
 
-    public static List<Event> getMockEvents() {
-        return Arrays.asList(
-                new Event(
-                        1,
-                        new Venue(
-                                1,
-                                "Cluj",
-                                "Venue",
-                                1000
-                        ),
-                        "Concert",
-                        "Come and see for yourself. Free candies to everyone :)",
-                        "Untold",
-                        "https://weraveyou.com/wp-content/uploads/2023/03/UNTOLD.jpeg",
-                        LocalDateTime.of(2023, 8, 10, 12, 0),
-                        LocalDateTime.of(2023, 8, 14, 12, 0),
-                        Arrays.asList(
-                                new TicketCategory(
-                                        1,
-                                        "Standard",
-                                        12
-                                ),
-                                new TicketCategory(
-                                        2,
-                                        "VIP",
-                                        24
-                                )
-                        )
-                ),
-                new Event(
-                        2,
-                        new Venue(
-                                2,
-                                "Cluj",
-                                "Venue",
-                                2000
-                        ),
-                        "Concert",
-                        "Let's dance in the rain ;)",
-                        "Electric Castle",
-                        "https://electriccastle.ro/assets/img/ec-official-logo.jpg",
-                        LocalDateTime.of(2023, 9, 10, 12, 0),
-                        LocalDateTime.of(2023, 9, 14, 12, 0),
-                        Arrays.asList(
-                                new TicketCategory(
-                                        3,
-                                        "Standard",
-                                        200
-                                ),
-                                new TicketCategory(
-                                        4,
-                                        "VIP",
-                                        400
-                                )
-                        )
-                )
-        );
-    }
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
+    private void setupToolbar() {
         MaterialToolbar materialToolbar = findViewById(R.id.mainToolbar);
         materialToolbar.setOnMenuItemClickListener(item -> {
             int menuId = item.getItemId();
@@ -107,12 +47,47 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
+    }
 
+    private void setupRecyclerView() {
         RecyclerView eventsRecyclerView = findViewById(R.id.eventRecyclerView);
+
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
         eventsRecyclerView.setLayoutManager(layoutManager);
-        EventAdapter adapter = new EventAdapter(getMockEvents());
+
+        EventAdapter adapter = new EventAdapter();
         eventsRecyclerView.setAdapter(adapter);
+
+        TicketsJavaService ticketsJavaService = TicketsServiceFactory.createTicketServiceForJava();
+        Call<List<Event>> eventsGetCall = ticketsJavaService.getEvents();
+        eventsGetCall.enqueue(new Callback<List<Event>>() {
+            @Override
+            public void onResponse(@NonNull Call<List<Event>> call, @NonNull Response<List<Event>> response) {
+                if (response.isSuccessful()) {
+                    adapter.updateData(response.body());
+                } else {
+                    Toast.makeText(getApplicationContext(), "Error " + response.message(), Toast.LENGTH_SHORT)
+                            .show();
+                    Log.d("NetworkRequest", response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<List<Event>> call, @NonNull Throwable t) {
+                Toast.makeText(getApplicationContext(), "Error " + t.getMessage(), Toast.LENGTH_SHORT)
+                     .show();
+                Log.e("NetworkRequest", t.getMessage());
+            }
+        });
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        setupToolbar();
+        setupRecyclerView();
 
         FloatingActionButton orderFab = findViewById(R.id.ordersFab);
         orderFab.setOnClickListener(view -> {
