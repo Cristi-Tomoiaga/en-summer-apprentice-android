@@ -11,8 +11,8 @@
     <string name="fab_content_description">Check orders</string>
     <string name="name_ascending_chip_main">Name ascending</string>
     <string name="name_descending_chip_main">Name descending</string>
-    <string name="price_ascending_chip_main">Price ascending</string>
-    <string name="price_descending_chip_main">Price descending</string>
+    <string name="date_ascending_chip_main">Date ascending</string>
+    <string name="date_descending_chip_main">Date descending</string>
     <string name="sort_by_main_textview">Sort by</string>
     <string name="category_dropdown">Category</string>
     <string name="num_of_tickets_hint"># of Tickets</string>
@@ -23,6 +23,9 @@
     <string name="date_descending_chip_order">Date descending</string>
     <string name="update_order_btn_text">Update</string>
     <string name="delete_order_btn_text">Delete</string>
+    <string name="filter_button_text">Filter</string>
+    <string name="price_ascending_chip_order">Price ascending</string>
+    <string name="price_descending_chip_order">Price descending</string>
 
     <string-array name="simple_items">
         <item>Standard</item>

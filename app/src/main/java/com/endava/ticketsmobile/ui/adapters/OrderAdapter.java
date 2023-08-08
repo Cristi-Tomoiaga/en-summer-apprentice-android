@@ -159,9 +159,15 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.ViewHolder> 
     }
 
     public void updateData(List<Order> orders) {
+        int oldItemCount = this.getItemCount();
         this.orders.clear();
+        notifyItemRangeRemoved(0, oldItemCount);
         this.orders.addAll(orders);
         notifyItemRangeChanged(0, getItemCount());
+    }
+
+    public List<Order> getData() {
+        return new ArrayList<>(this.orders);
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {

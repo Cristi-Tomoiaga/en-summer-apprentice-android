@@ -74,9 +74,15 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
     }
 
     public void updateData(List<Event> events) {
+        int oldItemCount = this.getItemCount();
         this.events.clear();
+        notifyItemRangeRemoved(0, oldItemCount);
         this.events.addAll(events);
         notifyItemRangeChanged(0, getItemCount());
+    }
+
+    public List<Event> getData() {
+        return new ArrayList<>(this.events);
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {

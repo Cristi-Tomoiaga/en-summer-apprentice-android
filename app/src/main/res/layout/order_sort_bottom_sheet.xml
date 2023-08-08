@@ -62,14 +62,14 @@
             style="@style/Widget.Material3.Chip.Filter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/price_ascending_chip_main" />
+            android:text="@string/price_ascending_chip_order" />
 
         <com.google.android.material.chip.Chip
-            android:id="@+id/orderCriceDesc"
+            android:id="@+id/orderChipPriceDesc"
             style="@style/Widget.Material3.Chip.Filter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/price_descending_chip_main" />
+            android:text="@string/price_descending_chip_order" />
 
     </com.google.android.material.chip.ChipGroup>
 

@@ -58,18 +58,18 @@
             android:text="@string/name_descending_chip_main" />
 
         <com.google.android.material.chip.Chip
-            android:id="@+id/chipPriceAsc"
+            android:id="@+id/chipDateAsc"
             style="@style/Widget.Material3.Chip.Filter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/price_ascending_chip_main" />
+            android:text="@string/date_ascending_chip_main" />
 
         <com.google.android.material.chip.Chip
-            android:id="@+id/chipPriceDesc"
+            android:id="@+id/chipDateDesc"
             style="@style/Widget.Material3.Chip.Filter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/price_descending_chip_main" />
+            android:text="@string/date_descending_chip_main" />
 
     </com.google.android.material.chip.ChipGroup>
 

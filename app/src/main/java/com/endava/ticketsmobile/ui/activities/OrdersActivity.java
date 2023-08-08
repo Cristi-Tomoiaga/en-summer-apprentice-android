@@ -14,9 +14,12 @@ import com.endava.ticketsmobile.data.model.Order;
 import com.endava.ticketsmobile.data.services.TicketsJavaService;
 import com.endava.ticketsmobile.data.services.util.TicketsServiceFactory;
 import com.endava.ticketsmobile.ui.adapters.OrderAdapter;
+import com.endava.ticketsmobile.ui.fragments.OrderSortCriteria;
 import com.endava.ticketsmobile.ui.fragments.OrderSortModalBottomSheet;
 import com.google.android.material.appbar.MaterialToolbar;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import retrofit2.Call;
@@ -24,6 +27,8 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class OrdersActivity extends AppCompatActivity {
+    private OrderAdapter adapter;
+    private OrderSortCriteria criteria = OrderSortCriteria.NONE;
 
     private void setupToolbar() {
         MaterialToolbar toolbar = findViewById(R.id.orderToolbar);
@@ -47,7 +52,7 @@ public class OrdersActivity extends AppCompatActivity {
         RecyclerView orderRecyclerView = findViewById(R.id.orderRecyclerView);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
         orderRecyclerView.setLayoutManager(layoutManager);
-        OrderAdapter adapter = new OrderAdapter();
+        adapter = new OrderAdapter();
         orderRecyclerView.setAdapter(adapter);
 
         TicketsJavaService ticketsJavaService = TicketsServiceFactory.createTicketServiceForJava();
@@ -80,5 +85,33 @@ public class OrdersActivity extends AppCompatActivity {
 
         setupToolbar();
         setupRecyclerView();
+    }
+
+    public void sortOrders(OrderSortCriteria criteria) {
+        this.criteria = criteria;
+
+        List<Order> sortedOrders = adapter.getData();
+        switch (criteria) {
+            case DATE_ASC:
+                sortedOrders.sort(Comparator.comparing(Order::getTimestamp));
+                break;
+            case DATE_DESC:
+                sortedOrders.sort(Collections.reverseOrder(Comparator.comparing(Order::getTimestamp)));
+                break;
+            case PRICE_ASC:
+                sortedOrders.sort(Comparator.comparing(Order::getTotalPrice));
+                break;
+            case PRICE_DESC:
+                sortedOrders.sort(Collections.reverseOrder(Comparator.comparing(Order::getTotalPrice)));
+                break;
+            case NONE:
+                break;
+        }
+
+        adapter.updateData(sortedOrders);
+    }
+
+    public OrderSortCriteria getCriteria() {
+        return criteria;
     }
 }
