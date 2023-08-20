@@ -22,6 +22,7 @@ import com.endava.ticketsmobile.data.model.Order;
 import com.endava.ticketsmobile.data.model.OrderPost;
 import com.endava.ticketsmobile.data.model.TicketCategory;
 import com.endava.ticketsmobile.data.services.TicketsJavaService;
+import com.endava.ticketsmobile.data.services.util.TicketsErrorHandler;
 import com.endava.ticketsmobile.data.services.util.TicketsServiceFactory;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.imageview.ShapeableImageView;
@@ -188,9 +189,17 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
                                     .show();
                             clearFields();
                         } else {
-                            Toast.makeText(itemView.getContext(), "Error " + response.message(), Toast.LENGTH_SHORT)
-                                    .show();
-                            Log.d("NetworkRequest", response.message());
+                            String errorMessage = TicketsErrorHandler.getErrorMessageFromResponse(response);
+                            if (errorMessage != null) {
+                                Toast.makeText(itemView.getContext(), "Error: " + errorMessage, Toast.LENGTH_SHORT)
+                                        .show();
+                                Log.d("NetworkRequest", errorMessage);
+                            } else {
+                                Toast.makeText(itemView.getContext(), "Error " + response.message(), Toast.LENGTH_SHORT)
+                                        .show();
+                                Log.d("NetworkRequest", response.message());
+                            }
+
                             clearFields();
                         }
                     }

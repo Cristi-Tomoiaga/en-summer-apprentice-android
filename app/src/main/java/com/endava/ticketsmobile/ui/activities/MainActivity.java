@@ -13,6 +13,7 @@ import android.widget.Toast;
 import com.endava.ticketsmobile.R;
 import com.endava.ticketsmobile.data.model.Event;
 import com.endava.ticketsmobile.data.services.TicketsJavaService;
+import com.endava.ticketsmobile.data.services.util.TicketsErrorHandler;
 import com.endava.ticketsmobile.data.services.util.TicketsServiceFactory;
 import com.endava.ticketsmobile.ui.adapters.EventAdapter;
 import com.endava.ticketsmobile.ui.fragments.EventSortCriteria;
@@ -75,9 +76,16 @@ public class MainActivity extends AppCompatActivity {
                 if (response.isSuccessful()) {
                     adapter.updateData(response.body());
                 } else {
-                    Toast.makeText(getApplicationContext(), "Error " + response.message(), Toast.LENGTH_SHORT)
-                            .show();
-                    Log.d("NetworkRequest", response.message());
+                    String errorMessage = TicketsErrorHandler.getErrorMessageFromResponse(response);
+                    if (errorMessage != null) {
+                        Toast.makeText(getApplicationContext(), "Error: " + errorMessage, Toast.LENGTH_SHORT)
+                                .show();
+                        Log.d("NetworkRequest", errorMessage);
+                    } else {
+                        Toast.makeText(getApplicationContext(), "Error " + response.message(), Toast.LENGTH_SHORT)
+                                .show();
+                        Log.d("NetworkRequest", response.message());
+                    }
                 }
             }
 
@@ -138,9 +146,16 @@ public class MainActivity extends AppCompatActivity {
                         adapter.updateData(filteredEvents);
                     }
                 } else {
-                    Toast.makeText(getApplicationContext(), "Error " + response.message(), Toast.LENGTH_SHORT)
-                            .show();
-                    Log.d("NetworkRequest", response.message());
+                    String errorMessage = TicketsErrorHandler.getErrorMessageFromResponse(response);
+                    if (errorMessage != null) {
+                        Toast.makeText(getApplicationContext(), "Error: " + errorMessage, Toast.LENGTH_SHORT)
+                                .show();
+                        Log.d("NetworkRequest", errorMessage);
+                    } else {
+                        Toast.makeText(getApplicationContext(), "Error " + response.message(), Toast.LENGTH_SHORT)
+                                .show();
+                        Log.d("NetworkRequest", response.message());
+                    }
                 }
             }
 

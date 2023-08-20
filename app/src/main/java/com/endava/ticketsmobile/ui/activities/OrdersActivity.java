@@ -12,6 +12,7 @@ import android.widget.Toast;
 import com.endava.ticketsmobile.R;
 import com.endava.ticketsmobile.data.model.Order;
 import com.endava.ticketsmobile.data.services.TicketsJavaService;
+import com.endava.ticketsmobile.data.services.util.TicketsErrorHandler;
 import com.endava.ticketsmobile.data.services.util.TicketsServiceFactory;
 import com.endava.ticketsmobile.ui.adapters.OrderAdapter;
 import com.endava.ticketsmobile.ui.fragments.OrderSortCriteria;
@@ -63,9 +64,16 @@ public class OrdersActivity extends AppCompatActivity {
                 if (response.isSuccessful()) {
                     adapter.updateData(response.body());
                 } else {
-                    Toast.makeText(getApplicationContext(), "Error " + response.message(), Toast.LENGTH_SHORT)
-                            .show();
-                    Log.d("NetworkRequest", response.message());
+                    String errorMessage = TicketsErrorHandler.getErrorMessageFromResponse(response);
+                    if (errorMessage != null) {
+                        Toast.makeText(getApplicationContext(), "Error: " + errorMessage, Toast.LENGTH_SHORT)
+                                .show();
+                        Log.d("NetworkRequest", errorMessage);
+                    } else {
+                        Toast.makeText(getApplicationContext(), "Error " + response.message(), Toast.LENGTH_SHORT)
+                                .show();
+                        Log.d("NetworkRequest", response.message());
+                    }
                 }
             }
 

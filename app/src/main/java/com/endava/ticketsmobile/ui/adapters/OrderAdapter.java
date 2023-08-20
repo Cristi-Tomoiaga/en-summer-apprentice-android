@@ -20,6 +20,7 @@ import com.endava.ticketsmobile.data.model.Order;
 import com.endava.ticketsmobile.data.model.OrderPatch;
 import com.endava.ticketsmobile.data.model.TicketCategory;
 import com.endava.ticketsmobile.data.services.TicketsNetService;
+import com.endava.ticketsmobile.data.services.util.TicketsErrorHandler;
 import com.endava.ticketsmobile.data.services.util.TicketsServiceFactory;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.textfield.MaterialAutoCompleteTextView;
@@ -78,9 +79,16 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.ViewHolder> 
                         orders.remove(holder.getAdapterPosition());
                         notifyItemRemoved(holder.getAdapterPosition());
                     } else {
-                        Toast.makeText(holder.itemView.getContext(), "Error " + response.message(), Toast.LENGTH_SHORT)
-                                .show();
-                        Log.d("NetworkRequest", response.message());
+                        String errorMessage = TicketsErrorHandler.getErrorMessageFromResponse(response);
+                        if (errorMessage != null) {
+                            Toast.makeText(holder.itemView.getContext(), "Error: " + errorMessage, Toast.LENGTH_SHORT)
+                                    .show();
+                            Log.d("NetworkRequest", errorMessage);
+                        } else {
+                            Toast.makeText(holder.itemView.getContext(), "Error " + response.message(), Toast.LENGTH_SHORT)
+                                    .show();
+                            Log.d("NetworkRequest", response.message());
+                        }
                     }
                 }
 
@@ -135,9 +143,16 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.ViewHolder> 
                         notifyItemChanged(holder.getAdapterPosition());
                         holder.clearFields();
                     } else {
-                        Toast.makeText(holder.itemView.getContext(), "Error " + response.message(), Toast.LENGTH_SHORT)
-                                .show();
-                        Log.d("NetworkRequest", response.message());
+                        String errorMessage = TicketsErrorHandler.getErrorMessageFromResponse(response);
+                        if (errorMessage != null) {
+                            Toast.makeText(holder.itemView.getContext(), "Error: " + errorMessage, Toast.LENGTH_SHORT)
+                                    .show();
+                            Log.d("NetworkRequest", errorMessage);
+                        } else {
+                            Toast.makeText(holder.itemView.getContext(), "Error " + response.message(), Toast.LENGTH_SHORT)
+                                    .show();
+                            Log.d("NetworkRequest", response.message());
+                        }
                         holder.clearFields();
                     }
                 }
