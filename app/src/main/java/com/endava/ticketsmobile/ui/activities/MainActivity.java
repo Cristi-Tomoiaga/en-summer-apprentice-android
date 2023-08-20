@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -98,6 +99,47 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void setupSwipeRefreshLayout() {
+        SwipeRefreshLayout eventSwipeRefreshLayout = findViewById(R.id.eventSwipeRefreshLayout);
+        eventSwipeRefreshLayout.setOnRefreshListener(() -> {
+            venueFilter = "";
+            eventNameFilter = "";
+            eventTypeFilter = "";
+            criteria = EventSortCriteria.NONE;
+
+            TicketsJavaService ticketsJavaService = TicketsServiceFactory.createTicketServiceForJava();
+            Call<List<Event>> eventsGetCall = ticketsJavaService.getEvents();
+            eventsGetCall.enqueue(new Callback<List<Event>>() {
+                @Override
+                public void onResponse(@NonNull Call<List<Event>> call, @NonNull Response<List<Event>> response) {
+                    if (response.isSuccessful()) {
+                        adapter.updateData(response.body());
+                    } else {
+                        String errorMessage = TicketsErrorHandler.getErrorMessageFromResponse(response);
+                        if (errorMessage != null) {
+                            Toast.makeText(getApplicationContext(), "Error: " + errorMessage, Toast.LENGTH_SHORT)
+                                    .show();
+                            Log.d("NetworkRequest", errorMessage);
+                        } else {
+                            Toast.makeText(getApplicationContext(), "Error " + response.message(), Toast.LENGTH_SHORT)
+                                    .show();
+                            Log.d("NetworkRequest", response.message());
+                        }
+                    }
+                    eventSwipeRefreshLayout.setRefreshing(false);
+                }
+
+                @Override
+                public void onFailure(@NonNull Call<List<Event>> call, @NonNull Throwable t) {
+                    Toast.makeText(getApplicationContext(), "Error " + t.getMessage(), Toast.LENGTH_SHORT)
+                            .show();
+                    Log.e("NetworkRequest", t.getMessage());
+                    eventSwipeRefreshLayout.setRefreshing(false);
+                }
+            });
+        });
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -105,6 +147,7 @@ public class MainActivity extends AppCompatActivity {
 
         setupToolbar();
         setupRecyclerView();
+        setupSwipeRefreshLayout();
 
         FloatingActionButton orderFab = findViewById(R.id.ordersFab);
         orderFab.setOnClickListener(view -> {

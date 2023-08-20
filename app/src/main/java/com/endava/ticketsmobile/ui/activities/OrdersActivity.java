@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -86,6 +87,44 @@ public class OrdersActivity extends AppCompatActivity {
         });
     }
 
+    private void setupSwipeRefreshLayout() {
+        SwipeRefreshLayout orderSwipeRefreshLayout = findViewById(R.id.orderSwipeRefreshLayout);
+        orderSwipeRefreshLayout.setOnRefreshListener(() -> {
+            criteria = OrderSortCriteria.NONE;
+
+            TicketsJavaService ticketsJavaService = TicketsServiceFactory.createTicketServiceForJava();
+            Call<List<Order>> ordersGetCall = ticketsJavaService.getOrders();
+            ordersGetCall.enqueue(new Callback<List<Order>>() {
+                @Override
+                public void onResponse(@NonNull Call<List<Order>> call, @NonNull Response<List<Order>> response) {
+                    if (response.isSuccessful()) {
+                        adapter.updateData(response.body());
+                    } else {
+                        String errorMessage = TicketsErrorHandler.getErrorMessageFromResponse(response);
+                        if (errorMessage != null) {
+                            Toast.makeText(getApplicationContext(), "Error: " + errorMessage, Toast.LENGTH_SHORT)
+                                    .show();
+                            Log.d("NetworkRequest", errorMessage);
+                        } else {
+                            Toast.makeText(getApplicationContext(), "Error " + response.message(), Toast.LENGTH_SHORT)
+                                    .show();
+                            Log.d("NetworkRequest", response.message());
+                        }
+                    }
+                    orderSwipeRefreshLayout.setRefreshing(false);
+                }
+
+                @Override
+                public void onFailure(@NonNull Call<List<Order>> call, @NonNull Throwable t) {
+                    Toast.makeText(getApplicationContext(), "Error " + t.getMessage(), Toast.LENGTH_SHORT)
+                            .show();
+                    Log.e("NetworkRequest", t.getMessage());
+                    orderSwipeRefreshLayout.setRefreshing(false);
+                }
+            });
+        });
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -93,6 +132,7 @@ public class OrdersActivity extends AppCompatActivity {
 
         setupToolbar();
         setupRecyclerView();
+        setupSwipeRefreshLayout();
     }
 
     public void sortOrders(OrderSortCriteria criteria) {
